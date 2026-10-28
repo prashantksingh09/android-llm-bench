@@ -1,0 +1,14 @@
+# Model files are large; download them as described in GUIDE.md
+models/
+*.gguf
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Editors and OS
+.DS_Store
+.ipynb_checkpoints/
+.vscode/
+.idea/

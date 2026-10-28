@@ -1,0 +1,7 @@
+model,weights_gb,read_pp512_tok_s,write_tg128_tok_s,memory_limit_tok_s,pct_of_limit,effective_bandwidth_gb_s,questions_right_of_20,perplexity
+0.8B 4-bit,0.569,149.8,34.47,60.0,57,19.6,11,19.59
+0.8B 8-bit,0.824,181.5,27.78,41.4,67,22.9,12,19.07
+2B 4-bit,1.385,71.4,16.81,24.6,68,23.3,14,13.78
+2B 8-bit,2.069,91.4,12.85,16.5,78,26.6,14,13.52
+4B 4-bit,3.002,26.7,6.91,11.4,61,20.7,19,10.26
+4B 8-bit,4.611,27.2,5.37,7.4,73,24.8,17,did not fit in memory

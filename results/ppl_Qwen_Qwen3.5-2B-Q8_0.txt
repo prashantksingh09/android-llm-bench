@@ -1,0 +1,25 @@
+0.01.459.676 W model has unused tensor blk.24.attn_norm.weight (size = 8192 bytes) -- ignoring
+0.01.459.933 W model has unused tensor blk.24.post_attention_norm.weight (size = 8192 bytes) -- ignoring
+0.01.460.060 W model has unused tensor blk.24.attn_q.weight (size = 8912896 bytes) -- ignoring
+0.01.460.123 W model has unused tensor blk.24.attn_k.weight (size = 1114112 bytes) -- ignoring
+0.01.460.184 W model has unused tensor blk.24.attn_v.weight (size = 1114112 bytes) -- ignoring
+0.01.460.266 W model has unused tensor blk.24.attn_output.weight (size = 4456448 bytes) -- ignoring
+0.01.460.329 W model has unused tensor blk.24.attn_q_norm.weight (size = 1024 bytes) -- ignoring
+0.01.460.404 W model has unused tensor blk.24.attn_k_norm.weight (size = 1024 bytes) -- ignoring
+0.01.460.466 W model has unused tensor blk.24.ffn_gate.weight (size = 13369344 bytes) -- ignoring
+0.01.460.533 W model has unused tensor blk.24.ffn_down.weight (size = 13369344 bytes) -- ignoring
+0.01.460.600 W model has unused tensor blk.24.ffn_up.weight (size = 13369344 bytes) -- ignoring
+0.01.460.667 W model has unused tensor blk.24.nextn.eh_proj.weight (size = 8912896 bytes) -- ignoring
+0.01.460.732 W model has unused tensor blk.24.nextn.enorm.weight (size = 8192 bytes) -- ignoring
+0.01.460.800 W model has unused tensor blk.24.nextn.hnorm.weight (size = 8192 bytes) -- ignoring
+0.01.460.877 W model has unused tensor blk.24.nextn.shared_head_norm.weight (size = 8192 bytes) -- ignoring
+0.05.547.253 I cmn          init: llama threadpool init, n_threads = 4
+0.05.850.800 I 
+0.05.851.096 I system_info: n_threads = 4 (n_threads_batch = 4) / 8 | CPU : NEON = 1 | ARM_FMA = 1 | FP16_VA = 1 | DOTPROD = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | 
+0.05.851.139 I perplexity: tokenizing the input ..
+0.06.937.853 I perplexity: tokenization took 1086.69 ms
+0.06.938.820 I perplexity: calculating perplexity over 20 chunks, n_ctx=512, batch_size=2048, n_seq=4
+1.10.705.509 I perplexity: 63.77 seconds per pass - ETA 5.30 minutes
+[1]8.1096,[2]12.0872,[3]11.9529,[4]12.0357,[5]11.6503,[6]11.9718,[7]12.3020,[8]13.4068,[9]14.2039,[10]14.6579,[11]14.4490,[12]14.6691,[13]15.2849,[14]14.5213,[15]14.3237,[16]14.6535,[17]13.6762,[18]13.7807,[19]13.6212,[20]13.5208,
+5.36.949.162 I Final estimate: PPL = 13.5208 +/- 0.54357
+

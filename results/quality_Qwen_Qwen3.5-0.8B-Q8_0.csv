@@ -1,0 +1,21 @@
+id,category,question,expected,response,auto_match,needs_review,correct,gen_tok_per_s
+1,math,What is 17 × 23?,391,441,0,0,0,27.32
+2,math,What is 144 divided by 12?,12,12,1,0,1,26.77
+3,math,A shirt costs 800 rupees and is discounted by 25%. What is the new price in rupees?,600,800 * 0.75 = 600,1,0,1,27.31
+4,math,What is 2 to the power of 10?,1024 | 1 024,100,0,0,0,27.2
+5,math,A train travels 180 km in 2 hours. What is its average speed in km/h?,90,180,0,0,0,27.03
+6,fact,What is the chemical symbol for sodium?,na,Na,1,0,1,26.67
+7,fact,Which planet in our solar system has the most mass?,jupiter,Jupiter,1,0,1,27.05
+8,fact,"At sea level, what is the boiling point of water in degrees Celsius?",100,100,1,0,1,27.12
+9,fact,Who wrote the play Romeo and Juliet?,shakespeare,William Shakespeare,1,0,1,27.05
+10,fact,What is the SI unit of electric current?,ampere | amperes | amp | amps,Amperes,1,0,1,27.11
+11,logic,Tom is taller than Sam. Sam is taller than Ravi. Who is the shortest?,ravi,Ravi,1,0,1,27.03
+12,logic,"If today is Monday, what day of the week will it be 10 days from now?",thursday,Monday,0,0,0,26.48
+13,logic,A farmer has 15 sheep. All but 8 run away. How many sheep are left?,8 | eight,17,0,0,0,26.98
+14,logic,"What is the next number in the sequence 2, 6, 12, 20, 30?",42,14,0,0,0,26.98
+15,logic,All bloops are razzies and all razzies are lazzies. Are all bloops lazzies? Answer yes or no.,yes,no,0,0,0,26.33
+16,language,Reverse the letters of the word planet.,tenalp,nteplan,0,0,0,26.86
+17,language,What is the opposite of the word ancient?,modern | new,modern,1,0,1,26.69
+18,language,How many letters are in the word physics?,7 | seven,7,1,0,1,26.7
+19,language,Translate 'thank you' into French.,merci,Merci,1,0,1,27.04
+20,science,Which gas do plants take in from the air for photosynthesis?,carbon dioxide | co2,Carbon dioxide,1,0,1,26.9

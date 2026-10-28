@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "android-llm-bench: running AI language models on an Android phone (OnePlus Nord 2), and what limits the speed"
+type: dataset
+authors:
+  - given-names: Prashant
+    family-names: Singh
+date-released: 2026-10-28
+version: "1.0"
+license:
+  - MIT
+  - CC-BY-4.0
+keywords:
+  - llm
+  - on-device inference
+  - llama.cpp
+  - android
+  - benchmark
+  - quantization
+  - memory bandwidth
+  - thermal throttling
+abstract: >-
+  Six versions of the Qwen3.5 language model (0.8B, 2B and 4B parameters, each
+  at 4-bit and 8-bit) were run offline with llama.cpp on a OnePlus Nord 2
+  (MediaTek Dimensity 1200, 8 GB RAM). Writing speed followed memory bandwidth
+  divided by model size, at 57-78% of the 34.1 GB/s limit. Sustained work halved
+  the speed once the battery reached 40 degrees C. The 4B 4-bit model gave the
+  best answers (19 of 20) at about 7 tokens per second.

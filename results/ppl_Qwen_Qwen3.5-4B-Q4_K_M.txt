@@ -1,0 +1,25 @@
+0.01.468.493 W model has unused tensor blk.32.attn_norm.weight (size = 10240 bytes) -- ignoring
+0.01.468.517 W model has unused tensor blk.32.post_attention_norm.weight (size = 10240 bytes) -- ignoring
+0.01.468.531 W model has unused tensor blk.32.attn_q.weight (size = 22282240 bytes) -- ignoring
+0.01.468.535 W model has unused tensor blk.32.attn_k.weight (size = 2785280 bytes) -- ignoring
+0.01.468.541 W model has unused tensor blk.32.attn_v.weight (size = 2785280 bytes) -- ignoring
+0.01.468.556 W model has unused tensor blk.32.attn_output.weight (size = 11141120 bytes) -- ignoring
+0.01.468.562 W model has unused tensor blk.32.attn_q_norm.weight (size = 1024 bytes) -- ignoring
+0.01.468.567 W model has unused tensor blk.32.attn_k_norm.weight (size = 1024 bytes) -- ignoring
+0.01.468.572 W model has unused tensor blk.32.ffn_gate.weight (size = 25067520 bytes) -- ignoring
+0.01.468.577 W model has unused tensor blk.32.ffn_down.weight (size = 25067520 bytes) -- ignoring
+0.01.468.583 W model has unused tensor blk.32.ffn_up.weight (size = 25067520 bytes) -- ignoring
+0.01.468.589 W model has unused tensor blk.32.nextn.eh_proj.weight (size = 13926400 bytes) -- ignoring
+0.01.468.595 W model has unused tensor blk.32.nextn.enorm.weight (size = 10240 bytes) -- ignoring
+0.01.468.601 W model has unused tensor blk.32.nextn.hnorm.weight (size = 10240 bytes) -- ignoring
+0.01.468.617 W model has unused tensor blk.32.nextn.shared_head_norm.weight (size = 10240 bytes) -- ignoring
+0.08.427.100 I cmn          init: llama threadpool init, n_threads = 4
+0.08.967.552 I 
+0.08.970.647 I system_info: n_threads = 4 (n_threads_batch = 4) / 8 | CPU : NEON = 1 | ARM_FMA = 1 | FP16_VA = 1 | DOTPROD = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | 
+0.08.970.965 I perplexity: tokenizing the input ..
+0.09.998.560 I perplexity: tokenization took 1027.58 ms
+0.09.999.544 I perplexity: calculating perplexity over 20 chunks, n_ctx=512, batch_size=2048, n_seq=4
+2.10.324.903 I perplexity: 120.32 seconds per pass - ETA 10.02 minutes
+[1]6.0933,[2]8.6614,[3]8.6964,[4]8.5711,[5]8.6433,[6]8.9868,[7]9.3335,[8]10.1187,[9]10.6934,[10]11.0831,[11]10.9576,[12]11.1084,[13]11.7312,[14]11.1651,[15]10.9862,[16]11.1333,[17]10.4006,[18]10.3957,[19]10.3103,[20]10.2575,
+10.24.382.211 I Final estimate: PPL = 10.2575 +/- 0.39709
+
