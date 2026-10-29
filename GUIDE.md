@@ -278,6 +278,29 @@ Each result is saved as soon as that model finishes. If the run is interrupted, 
 - **`-r 3`** runs each test 3 times and reports the average and the spread (the ± number).
 - **Wait before the answer starts:** for a 512-token prompt, it's about 512 ÷ the pp512 speed, in seconds.
 
+### 7c – Longer context (optional, about 30–45 minutes)
+
+Steps 7a and 7b start every test from an empty context. In a real conversation, the model also looks back over everything said so far. This test first fills the context to a set length, then measures writing speed. Each length runs on its own after a cooldown, so heat doesn't mix into the result.
+
+```bash
+cd ~/lab/llama.cpp
+for d in 0 1024 2048 4096 8192; do
+  bash ~/lab/scripts/cool.sh 31
+  ./build/bin/llama-bench -m ~/lab/models/Qwen_Qwen3.5-2B-Q4_K_M.gguf -t 4 -C 0xF0 --cpu-strict 1 -p 0 -n 128 -d $d -r 3 --progress -o csv > ~/lab/results/depth_2B_$d.csv
+done
+for d in 0 1024 2048 4096 8192; do echo "depth $d"; python ~/lab/scripts/show.py ~/lab/results/depth_2B_$d.csv; done
+```
+
+`--progress` prints each stage on screen, because the results themselves go into the files.
+
+**Optional: see how big the cache is.** This loads the model with room for 8,192 tokens and saves llama.cpp's detailed log, which reports the cache size and which layers keep one.
+
+```bash
+cd ~/lab/llama.cpp
+./build/bin/llama-cli -m ~/lab/models/Qwen_Qwen3.5-2B-Q4_K_M.gguf -c 8192 -n 1 -st -p hi -v > ~/lab/results/kvcache_2B_ctx8192.log 2>&1
+grep -E "llama_kv_cache: size|llama_memory_recurrent: size" ~/lab/results/kvcache_2B_ctx8192.log
+```
+
 ---
 
 ## Step 8 – Heat and battery over 10 minutes (about 40 minutes)

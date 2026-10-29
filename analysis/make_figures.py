@@ -268,6 +268,56 @@ def fig_quality(table, scores):
     save(fig, "fig4_quality_vs_speed.png")
 
 
+# ---------------------------------------------- Step 7c: longer context (2B 4-bit)
+def depth_runs():
+    """Writing speed at each context depth, plus the KV cache size from the llama.cpp log."""
+    rows = []
+    for path in glob.glob(os.path.join(RES, "depth_2B_*.csv")):
+        for r in read_csv(path):
+            rows.append({"depth": int(r["n_depth"]), "tps": float(r["avg_ts"]), "sd": float(r["stddev_ts"]),
+                         "size_gb": int(r["model_size"]) / 1e9})
+    rows.sort(key=lambda r: r["depth"])
+    log = open(os.path.join(RES, "kvcache_2B_ctx8192.log"), errors="replace").read()
+    hit = re.search(r"llama_kv_cache: size =\s+([\d.]+) MiB \(\s*(\d+) cells,\s+(\d+) layers", log)
+    kv_mib, cells, layers = float(hit.group(1)), int(hit.group(2)), int(hit.group(3))
+    n_layer = int(re.search(r"print_info: n_layer\s+=\s+(\d+)", log).group(1))
+    return rows, kv_mib * 2**20 / cells, layers, n_layer
+
+
+def fig_context(rows, kv_per_token, kv_layers, n_layer):
+    base = rows[0]
+    eff_bw = base["tps"] * base["size_gb"] * 1e9  # bytes/s achieved with an empty context
+    predicted = [eff_bw / (base["size_gb"] * 1e9 + kv_per_token * r["depth"]) for r in rows]
+    xs = [r["depth"] for r in rows]
+    fig, ax = plt.subplots(figsize=(10, 5.4))
+    fig.subplots_adjust(left=0.08, right=0.80, top=0.76, bottom=0.12)
+    ax.plot(xs, predicted, color=MUTED, lw=1.6, ls=(0, (4, 3)), marker="o", ms=4)
+    ax.errorbar(xs, [r["tps"] for r in rows], yerr=[r["sd"] for r in rows], color=BLUE, lw=2,
+                marker="o", ms=6, capsize=3, ecolor=INK2, elinewidth=1)
+    for r in rows:
+        ax.annotate(f"{r['tps']:.1f}", (r["depth"], r["tps"]), xytext=(0, -18), textcoords="offset points",
+                    ha="center", fontsize=9.5, color=INK)
+    end_pred, end = predicted[-1], rows[-1]
+    ax.text(8500, end_pred, "if only reading the\nextra cache mattered", color=INK2, fontsize=9.5, va="center")
+    ax.text(8500, end["tps"], "measured", color=BLUE, fontsize=10, va="center", fontweight="bold")
+    ax.set_xlim(-300, 8400)
+    ax.set_xticks(xs)
+    ax.set_xticklabels([f"{x:,}" for x in xs])
+    ax.set_ylim(0, 20)
+    ax.set_yticks([0, 5, 10, 15, 20])
+    ax.set_xlabel("tokens already in context")
+    ax.set_ylabel("writing speed, tokens per second")
+    ax.yaxis.grid(True, color=GRID)
+    ax.set_axisbelow(True)
+    share = (1 / end_pred - 1 / base["tps"]) / (1 / end["tps"] - 1 / base["tps"]) * 100
+    titles(fig, f"Long context cuts writing speed by a third; reading the cache explains only {share:.0f}% of that",
+           f"Qwen3.5 2B 4-bit, mean of 3 runs per depth, cooldown between depths. Only {kv_layers} of its {n_layer} layers keep a "
+           f"cache ({kv_per_token / 1024:.0f} KB per token).\nThe grey line adds reading that cache to the weights, "
+           f"at the bandwidth measured with an empty context.")
+    save(fig, "fig5_context.png")
+    return predicted, share
+
+
 def main():
     os.makedirs(FIG, exist_ok=True)
     print("Building figures from results/ ...")
@@ -279,6 +329,8 @@ def main():
     scores = quality_scores()
     ppl = perplexity()
     fig_quality(table, scores)
+    depth, kv_per_token, kv_layers, n_layer = depth_runs()
+    predicted, kv_share = fig_context(depth, kv_per_token, kv_layers, n_layer)
 
     path = os.path.join(OUT, "summary.csv")
     with open(path, "w", newline="") as f:
@@ -302,6 +354,11 @@ def main():
         print(f"heat {label(r['model'])}: {r['first']:.2f} -> {r['late']:.2f} tok/s after 5 min "
               f"({r['late'] / r['first'] * 100:.0f}%), 40 C at {r['hot_s']:.0f} s, "
               f"{r['tokens']} tokens, {r['pct_used']}% battery, {r['mah_per_1k']:.0f} mAh per 1,000 tokens")
+    print(f"context (2B 4-bit): KV cache {kv_per_token:.0f} bytes per token in {kv_layers} of {n_layer} layers")
+    for r, p in zip(depth, predicted):
+        print(f"  depth {r['depth']:5d}: {r['tps']:5.2f} tok/s measured ({r['tps'] / depth[0]['tps'] * 100:3.0f}%), "
+              f"{p:5.2f} if only cache reads mattered")
+    print(f"  cache reads explain {kv_share:.0f}% of the slowdown at {depth[-1]['depth']:,} tokens")
 
 
 if __name__ == "__main__":

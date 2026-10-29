@@ -1,6 +1,6 @@
 # Running AI language models on a 2021 phone: what limits the speed?
 
-A small, fully reproducible experiment. I ran six versions of the same open AI model, offline, on a OnePlus Nord 2 (2021, 8 GB RAM) and measured four things: how fast it writes, how fast it reads, how heat and battery change over 10 minutes, and how many test questions each version gets right.
+A small, fully reproducible experiment. I ran six versions of the same open AI model, offline, on a OnePlus Nord 2 (2021, 8 GB RAM) and measured how fast it writes and reads, how much a long conversation slows it down, how heat and battery change over 10 minutes, and how many test questions each version gets right.
 
 **Short answer:** the phone writes as fast as its memory can deliver the model, and no faster. A model twice as big writes about half as fast. After about 5 minutes of nonstop work, the phone slows to roughly half speed to keep the battery near 40 °C. The best all-round choice on this phone was the 4-billion-parameter model compressed to 4-bit: 19 of 20 questions right, at about reading speed.
 
@@ -13,9 +13,10 @@ Every number and chart here is rebuilt from the raw files in [`results/`](result
 1. **Use the 4 fast cores, not all 8.** The phone's chip has 4 fast cores and 4 slow ones. Pinning the work to the 4 fast cores was fastest, at 35.5 tokens per second. Using all 8 dropped it to 18.4, because the fast cores spend their time waiting for the slow ones.
 2. **Memory bandwidth sets the writing speed.** To write each token, the phone reads the whole model from memory once. Measured speeds were 57–78% of the limit that the phone's memory speed allows. Speed × model size stayed between 19.6 and 26.6 GB/s across an eightfold range of sizes.
 3. **4-bit compression speeds up writing but slows reading.** 4-bit files wrote 24–31% faster than 8-bit files of the same model, but read prompts 2–22% slower, because unpacking 4-bit numbers takes extra arithmetic.
-4. **Heat halves the speed after about 5 minutes.** When the battery reached 40 °C, the phone cut its processor speed. Both models tested then ran at 52–56% of their starting speed.
-5. **Bigger models answer better, and 4-bit costs almost nothing.** Out of 20 questions, the 0.8B model got 11–12 right, 2B got 14 and 4B got 17–19. The 4-bit and 8-bit versions of each size scored within 2 questions of each other.
-6. **Memory size is the hard limit.** Android leaves only about 5 GB of the phone's 8 GB free. The largest file (4B 8-bit, 4.6 GB) still ran, but a heavier test on it did not fit.
+4. **Long conversations slow it down, and the cache isn't the main reason.** With 8,192 tokens already in context, the 2B model wrote 35% slower. Only 6 of its 24 layers keep a growing cache, and reading that cache explains just 14% of the slowdown.
+5. **Heat halves the speed after about 5 minutes.** When the battery reached 40 °C, the phone cut its processor speed. Both models tested then ran at 52–56% of their starting speed.
+6. **Bigger models answer better, and 4-bit costs almost nothing.** Out of 20 questions, the 0.8B model got 11–12 right, 2B got 14 and 4B got 17–19. The 4-bit and 8-bit versions of each size scored within 2 questions of each other.
+7. **Memory size is the hard limit.** Android leaves only about 5 GB of the phone's 8 GB free. The largest file (4B 8-bit, 4.6 GB) still ran, but a heavier test on it did not fit.
 
 ---
 
@@ -34,6 +35,7 @@ Every number and chart here is rebuilt from the raw files in [`results/`](result
 | Memory bandwidth | How many gigabytes per second the chip can read from memory |
 | Throttling | The phone slowing itself down so it doesn't overheat |
 | Perplexity | How well a model predicts real text. Lower is better |
+| Context, KV cache | Everything the model has read or written so far in a conversation, and the memory where it keeps it |
 
 ---
 
@@ -86,7 +88,22 @@ Speeds are the mean of 3 runs with a 512-token prompt (reading) and 128 generate
 
 If memory sets the speed, speed × size should be roughly constant, and it is: 19.6–26.6 GB/s (average 23.0 GB/s) across an eightfold range of sizes. In practice the phone reaches 57–78% of its theoretical peak.
 
-### 3. 4-bit: faster writing, slower reading
+### 3. Long context slows writing, and the cache isn't the main reason
+
+![Line chart: writing speed of the 2B model stays at 16.6 tokens per second up to 1,024 tokens of context, then falls to 10.8 at 8,192, far below a grey line showing what reading the extra cache alone would cost](figures/fig5_context.png)
+
+The tests above start from an empty context. In a real conversation, the model also looks back over everything said so far, which it keeps in memory as the KV cache. This test (Step 7c in the guide) first fills the context to a set length, then measures writing speed, with a cooldown between lengths.
+
+| Tokens already in context | 0 | 1,024 | 2,048 | 4,096 | 8,192 |
+| --- | --- | --- | --- | --- | --- |
+| Writing speed (tok/s) | 16.6 | 16.6 | 14.5 | 13.8 | 10.8 |
+| Compared with empty context | 100% | 100% | 88% | 83% | 65% |
+
+Qwen3.5 is a hybrid model, which limits how big that cache gets. The llama.cpp log ([`kvcache_2B_ctx8192.log`](results/kvcache_2B_ctx8192.log)) shows that only 6 of the 2B model's 24 layers keep a cache that grows with context. The other 18 keep a fixed 19 MB memory instead. At 8,192 tokens the cache is 96 MB, or 12 KB per token.
+
+Reading those extra 96 MB at the bandwidth measured with an empty context costs about 4 ms per token, but writing slowed by 32 ms per token. So reading the cache explains only about 14% of the slowdown. The rest is most likely the arithmetic of comparing each new token with every earlier one, which grows with context and does not keep pace with memory on this CPU.
+
+### 4. 4-bit: faster writing, slower reading
 
 | Size | 4-bit vs 8-bit, writing | 4-bit vs 8-bit, reading | 4-bit vs 8-bit, file size |
 | --- | --- | --- | --- |
@@ -96,7 +113,7 @@ If memory sets the speed, speed × size should be roughly constant, and it is: 1
 
 The 4-bit files are about a third smaller, but they write only 24–31% faster, not the 45–54% their size predicts. Unpacking 4-bit numbers adds arithmetic, and that arithmetic also makes 4-bit files slower at reading prompts, which is purely an arithmetic job.
 
-### 4. Heat halves the speed after about 5 minutes
+### 5. Heat halves the speed after about 5 minutes
 
 ![Line chart: speed of both models slides for 5 minutes, then drops to about half when the battery reaches 40 °C; lower panel shows battery temperature rising to 40 °C and staying there](figures/fig3_heat.png)
 
@@ -111,7 +128,7 @@ This is throttling. A phone can only shed so much heat, so once it reaches its l
 
 The bigger model uses about 4.5 times more battery for the same amount of text. The battery figures are rough (about ±17%), because Android reports the battery level in whole 1% steps.
 
-### 5. Bigger models answer better
+### 6. Bigger models answer better
 
 ![Scatter of questions answered correctly against writing speed; the 4B 4-bit file is highest at 19 of 20, the 0.8B files are fastest but get 11 to 12 right](figures/fig4_quality_vs_speed.png)
 
@@ -133,7 +150,7 @@ Perplexity measures the same thing more finely. It shows how well each model pre
 
 Compressing to 4-bit made the models 2–3% worse at predicting text. Going from 0.8B to 4B made them about 48% better (19.59 → 10.26 for the 4-bit files). In every one of the 20 chunks, the 4-bit file scored slightly worse than the 8-bit file of the same size, so this small gap is real.
 
-### 6. Memory size is the hard limit
+### 7. Memory size is the hard limit
 
 The phone reports 7.7 GB of usable memory. Android and its background apps take about 2.7 GB of that, so only about 5 GB is free, even right after a restart. The 4B 8-bit file (4.6 GB) still ran in the speed and question tests. The perplexity test needs extra working memory on top of the model, though, and Android stopped it both times.
 
@@ -145,6 +162,7 @@ The phone reports 7.7 GB of usable memory. Android and its background apps take 
 - **For speed:** use the 2B 4-bit model. It writes more than twice as fast (17 tokens per second) but makes more mistakes.
 - **Prefer 4-bit files on this phone.** The 8-bit files write more slowly and scored no better in this test.
 - **Expect long jobs to run at about half speed** once the phone warms up.
+- **Keep conversations short when speed matters:** with 8,192 tokens of context, the 2B model writes about a third slower.
 
 ---
 
@@ -155,6 +173,7 @@ The phone reports 7.7 GB of usable memory. Android and its background apps take 
 - **20 questions is a small test:** treat score differences of 1–2 as a tie.
 - **CPU only:** llama.cpp in Termux has no GPU or NPU acceleration here, so apps that use the GPU may run faster.
 - **One model family:** other model families may behave a little differently, although the bandwidth limit applies to all of them.
+- **Long context tested on one model:** only the 2B 4-bit file, up to 8,192 tokens.
 
 ---
 
@@ -182,6 +201,8 @@ android-llm-bench/
 │   ├── env.txt            phone, Android, RAM, cores, llama.cpp commit
 │   ├── threads*.csv       Step 7a: thread sweep
 │   ├── speed_*.csv        Step 7b: reading and writing speed per model file
+│   ├── depth_2B_*.csv     Step 7c: writing speed with 0 to 8,192 tokens in context
+│   ├── kvcache_2B_ctx8192.log  llama.cpp log with the cache size and layer layout
 │   ├── sustained_*.csv    Step 8: 10-minute heat and battery runs
 │   ├── quality_*.csv      Step 9: answers to the 20 questions
 │   └── ppl_*.txt          Step 9: perplexity logs
